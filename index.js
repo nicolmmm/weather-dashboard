@@ -9,6 +9,7 @@ var userInput=document.getElementById("user-input");
 var submitButton=document.getElementById("submit-button");
 var searchHistory= document.getElementById("search-history")
 var iconHolder=document.getElementById("icon-holder");
+var forecast= document.getElementById("forecast");
 
 submitButton.addEventListener("click", getLatLon)
 
@@ -38,13 +39,16 @@ submitButton.addEventListener("click", getLatLon)
             cityWindEl.innerText="";
             cityHumidityEl.innerText="";
             cityUVEl.innerText="";
+            forecast.innerHTML="";
             ;
             return 
         }
-        console.log(data)
         searchHistAppend()
         cityNameEl.innerText= userSearch
-        userInput.value="";       
+        userInput.value="";
+        //resets the 5 day forecast if checks are passed
+        forecast.innerHTML="";
+
         lat=data[0].lat;
         lon=data[0].lon;
 
@@ -52,8 +56,7 @@ submitButton.addEventListener("click", getLatLon)
             var search= userInput.value
              var newEl= document.createElement("p");
              newEl.innerText=search;
-             newEl.setAttribute("city", search)
-             console.log(newEl)
+             newEl.setAttribute("city", search);
              searchHistory.append(newEl)
             }
 
@@ -72,13 +75,52 @@ fetch(openWeatheMaprUrl)
 .then(function(data){
     console.log(data)
 
+//populate current forecast
 cityTempEl.innerText= data.current.temp;
 cityWindEl.innerText=data.current.wind_speed
 cityHumidityEl.innerText=data.current.humidity
 cityUVEl.innerText=data.current.uvi
 iconCode=data.current.weather[0].icon
 var imgURL="<img src='https://openweathermap.org/img/wn/"+iconCode+"@2x.png'>"
-console.log(imgURL)
 iconHolder.innerHTML= imgURL
+
+//5 day forecast
+
+
+
+for (let index = 1; index < 6; index++) {
+//get day
+ var date = new Date((data.daily[index].dt)*1000);
+ console.log("the time code is "+data.daily[1].dt+"the date is "+ date.toDateString())
+
+var forecastDaysEl= document.createElement("div")
+forecastDaysEl.className="forecast-days";
+//date
+var newDateEl= document.createElement("h4");
+newDateEl.append(date.toDateString())
+forecastDaysEl.append(newDateEl)
+//icon
+var forecastIconEl= document.createElement("span");
+var forecastDayIconRef=data.daily[index].weather[0].icon
+var imgURL="<img src='https://openweathermap.org/img/wn/"+forecastDayIconRef+"@2x.png'>"
+forecastIconEl.innerHTML= imgURL
+//temp
+var forecastTempEl=document.createElement("h5");
+forecastTempEl.append("Temp: "+ data.daily[index].temp.day+ "C");
+//wind
+var forecastWindEl=document.createElement("h5");
+forecastWindEl.append("Wind: "+ data.daily[index].wind_speed+"km/h");
+//humidity
+var forecastHumidEl=document.createElement("h5");
+forecastHumidEl.append("Humidity: "+ data.daily[index].humidity+"%");
+
+//append all to div
+forecastDaysEl.append(forecastIconEl, forecastTempEl, forecastWindEl, forecastHumidEl)
+forecast.append(forecastDaysEl)
+//end of loop
+}
+
+
+
 
 })}
